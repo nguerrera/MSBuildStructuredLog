@@ -28,6 +28,7 @@ namespace Microsoft.Build.Logging
         /// Initializes a new instance of BuildEventArgsReader using a BinaryReader instance
         /// </summary>
         /// <param name="binaryReader">The BinaryReader to read BuildEventArgs from</param>
+        /// <param name="fileFormatVersion">The file format version of the log file being read.</param>
         public BuildEventArgsReader(BinaryReader binaryReader, int fileFormatVersion)
         {
             this.binaryReader = binaryReader;
@@ -134,6 +135,15 @@ namespace Microsoft.Build.Logging
             var fields = ReadBuildEventArgsFields();
             // Read unused Importance, it defaults to Low
             ReadInt32();
+
+            bool importIgnored = false;
+
+            // the ImportIgnored field was introduced in file format version 3
+            if (fileFormatVersion > 2)
+            {
+                importIgnored = ReadBoolean();
+            }
+
             var importedProjectFile = ReadOptionalString();
             var unexpandedProject = ReadOptionalString();
 
